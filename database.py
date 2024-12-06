@@ -5,6 +5,7 @@ DB_NAME = "tasks.db"
 def init_db():
     conn = sqlite3.connect(DB_NAME)
     cursor = conn.cursor()
+    # Tasks table
     cursor.execute("""
         CREATE TABLE IF NOT EXISTS tasks (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -12,8 +13,30 @@ def init_db():
             description TEXT NOT NULL
         )
     """)
+    # Users table
+    cursor.execute("""
+        CREATE TABLE IF NOT EXISTS users (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            username TEXT NOT NULL UNIQUE,
+            password TEXT NOT NULL,
+            role TEXT NOT NULL CHECK(role IN ('admin', 'user'))
+        )
+    """)
+    # Default admin user
+    cursor.execute("""
+        INSERT OR IGNORE INTO users (username, password, role)
+        VALUES ('admin', 'password', 'admin')
+    """)
     conn.commit()
     conn.close()
+
+def get_user_by_username(username):
+    conn = sqlite3.connect(DB_NAME)
+    cursor = conn.cursor()
+    cursor.execute("SELECT * FROM users WHERE username = ?", (username,))
+    user = cursor.fetchone()
+    conn.close()
+    return user
 
 def get_all_tasks():
     conn = sqlite3.connect(DB_NAME)
