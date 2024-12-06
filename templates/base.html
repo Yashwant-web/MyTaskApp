@@ -7,16 +7,14 @@
 <body>
     <nav>
         <a href="{{ url_for('home') }}">Home</a>
-        {% if session.get('role') == 'admin' %}
-            <a href="{{ url_for('add') }}">Add Task</a>
-        {% endif %}
         {% if session.get('username') %}
             <span>Logged in as {{ session.get('username') }} ({{ session.get('role') }})</span>
             <a href="{{ url_for('logout') }}">Logout</a>
         {% else %}
             <a href="{{ url_for('login') }}">Login</a>
+            <a href="{{ url_for('register') }}">Register</a>
         {% endif %}
-    </nav>    
+    </nav>  
     <div class="container">
         {% with messages = get_flashed_messages(with_categories=true) %}
         {% if messages %}

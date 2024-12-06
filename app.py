@@ -9,6 +9,26 @@ def home():
     tasks = database.get_all_tasks()
     return render_template("view.html", tasks=tasks, user_role=session.get("role"))
 
+@app.route("/register", methods=["GET", "POST"])
+def register():
+    if request.method == "POST":
+        username = request.form["username"]
+        password = request.form["password"]
+        role = request.form["role"]
+        
+        # Check if user already exists
+        existing_user = database.get_user_by_username(username)
+        if existing_user:
+            flash("Username already taken. Please choose another.", "danger")
+            return redirect(url_for("register"))
+        
+        # Add new user
+        database.add_user(username, password, role)
+        flash("Registration successful! You can now log in.", "success")
+        return redirect(url_for("login"))
+    
+    return render_template("register.html")
+
 @app.route("/login", methods=["GET", "POST"])
 def login():
     if request.method == "POST":

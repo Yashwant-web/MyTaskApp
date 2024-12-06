@@ -74,3 +74,14 @@ def delete_task(task_id):
     cursor.execute("DELETE FROM tasks WHERE id = ?", (task_id,))
     conn.commit()
     conn.close()
+
+def add_user(username, password, role):
+    conn = sqlite3.connect(DB_NAME)
+    cursor = conn.cursor()
+    cursor.execute("""
+        INSERT INTO users (username, password, role)
+        VALUES (?, ?, ?)
+    """, (username, password, role))
+    conn.commit()
+    conn.close()
+
