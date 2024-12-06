@@ -2,18 +2,13 @@
 {% block content %}
 <h1>Register</h1>
 <form method="POST">
+    {{ form.hidden_tag() }}
     <label for="username">Username:</label>
-    <input type="text" name="username" id="username" required>
-    
+    {{ form.username(size=20) }}
     <label for="password">Password:</label>
-    <input type="password" name="password" id="password" required>
-    
+    {{ form.password(size=20) }}
     <label for="role">Role:</label>
-    <select name="role" id="role">
-        <option value="user">User</option>
-        <option value="admin">Admin</option>
-    </select>
-    
+    {{ form.role() }}
     <button type="submit">Register</button>
 </form>
 {% endblock %}

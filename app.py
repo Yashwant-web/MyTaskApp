@@ -1,53 +1,74 @@
 from flask import Flask, render_template, request, redirect, url_for, flash, session
+from flask_wtf import FlaskForm
+from wtforms import StringField, PasswordField, SelectField
+from wtforms.validators import DataRequired, Length
+from werkzeug.security import generate_password_hash, check_password_hash
 import database
 
 app = Flask(__name__)
-app.secret_key = "supersecretkey"  # Required for session management
+app.secret_key = "supersecretkey"  # For session and Flask-WTF CSRF protection
+
+# WTForms for Login and Registration
+class LoginForm(FlaskForm):
+    username = StringField("Username", validators=[DataRequired(), Length(min=3, max=20)])
+    password = PasswordField("Password", validators=[DataRequired(), Length(min=6)])
+
+class RegisterForm(FlaskForm):
+    username = StringField("Username", validators=[DataRequired(), Length(min=3, max=20)])
+    password = PasswordField("Password", validators=[DataRequired(), Length(min=6)])
+    role = SelectField("Role", choices=[("user", "User"), ("admin", "Admin")])
 
 @app.route("/")
 def home():
     tasks = database.get_all_tasks()
     return render_template("view.html", tasks=tasks, user_role=session.get("role"))
 
-@app.route("/register", methods=["GET", "POST"])
-def register():
-    if request.method == "POST":
-        username = request.form["username"]
-        password = request.form["password"]
-        role = request.form["role"]
-        
-        # Check if user already exists
-        existing_user = database.get_user_by_username(username)
-        if existing_user:
-            flash("Username already taken. Please choose another.", "danger")
-            return redirect(url_for("register"))
-        
-        # Add new user
-        database.add_user(username, password, role)
-        flash("Registration successful! You can now log in.", "success")
-        return redirect(url_for("login"))
-    
-    return render_template("register.html")
-
 @app.route("/login", methods=["GET", "POST"])
 def login():
-    if request.method == "POST":
-        username = request.form["username"]
-        password = request.form["password"]
+    form = LoginForm()
+    if form.validate_on_submit():
+        username = form.username.data
+        password = form.password.data
         user = database.get_user_by_username(username)
-        if user and user[2] == password:  # Simple password check (hashing should be added)
+        if user and check_password_hash(user[2], password):  # hashed password
             session["username"] = user[1]
             session["role"] = user[3]
             flash("Logged in successfully!", "success")
             return redirect(url_for("home"))
         flash("Invalid credentials!", "danger")
-    return render_template("login.html")
+    return render_template("login.html", form=form)
 
 @app.route("/logout")
 def logout():
     session.clear()
     flash("Logged out successfully!", "success")
     return redirect(url_for("login"))
+
+@app.route("/register", methods=["GET", "POST"])
+def register():
+    form = RegisterForm()
+    if form.validate_on_submit():
+        username = form.username.data
+        password = form.password.data
+        role = form.role.data
+
+        # only admins can register other admins
+        if role == "admin" and session.get("role") != "admin":
+            flash("Only admins can create admin accounts.", "danger")
+            return redirect(url_for("register"))
+
+        # username already exists check
+        existing_user = database.get_user_by_username(username)
+        if existing_user:
+            flash("Username already taken. Please choose another.", "danger")
+            return redirect(url_for("register"))
+
+        # user with a hashed password
+        hashed_password = generate_password_hash(password)
+        database.add_user(username, hashed_password, role)
+        flash("Registration successful! You can now log in.", "success")
+        return redirect(url_for("login"))
+    return render_template("register.html", form=form)
 
 @app.route("/add", methods=["GET", "POST"])
 def add():
