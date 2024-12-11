@@ -1,5 +1,5 @@
 from flask import Flask, render_template, request, redirect, url_for, flash, session
-from flask_wtf import FlaskForm
+from flask_wtf import FlaskForm, RecaptchaField
 from wtforms import StringField, PasswordField, SelectField
 from wtforms.validators import DataRequired, Length
 from werkzeug.security import generate_password_hash, check_password_hash
@@ -7,11 +7,16 @@ import database
 
 app = Flask(__name__)
 app.secret_key = "supersecretkey"  # For session and Flask-WTF CSRF protection
+# Configure reCAPTCHA
+app.config['RECAPTCHA_PUBLIC_KEY'] = '6LdN25gqAAAAAKVU42RHVy-eJdzT79WR7D0_vyOW'  
+app.config['RECAPTCHA_PRIVATE_KEY'] = '6LdN25gqAAAAAAzdGmhXn02Ij4RcdtF62zLnetHg'
+app.config['RECAPTCHA_USE_SSL'] = False
 
 # WTForms for Login and Registration
 class LoginForm(FlaskForm):
     username = StringField("Username", validators=[DataRequired(), Length(min=3, max=20)])
     password = PasswordField("Password", validators=[DataRequired(), Length(min=6)])
+    recaptcha = RecaptchaField()
 
 class RegisterForm(FlaskForm):
     username = StringField("Username", validators=[DataRequired(), Length(min=3, max=20)])
