@@ -3,14 +3,20 @@ from flask_wtf import FlaskForm, RecaptchaField
 from wtforms import StringField, PasswordField, SelectField
 from wtforms.validators import DataRequired, Length
 from werkzeug.security import generate_password_hash, check_password_hash
+from dotenv import load_dotenv
 import database
+import os
+
+
+# Load environment variables
+load_dotenv()
 
 app = Flask(__name__)
-app.secret_key = "supersecretkey"  # For session and Flask-WTF CSRF protection
+app.config['SECRET_KEY'] = os.getenv('SECRET_KEY')  # For session and Flask-WTF CSRF protection
 # Configure reCAPTCHA
-app.config['RECAPTCHA_PUBLIC_KEY'] = '6LdN25gqAAAAAKVU42RHVy-eJdzT79WR7D0_vyOW'  
-app.config['RECAPTCHA_PRIVATE_KEY'] = '6LdN25gqAAAAAAzdGmhXn02Ij4RcdtF62zLnetHg'
-app.config['RECAPTCHA_USE_SSL'] = False
+app.config['RECAPTCHA_PUBLIC_KEY'] = os.getenv('RECAPTCHA_PUBLIC_KEY')
+app.config['RECAPTCHA_PRIVATE_KEY'] = os.getenv('RECAPTCHA_PRIVATE_KEY')
+app.config['RECAPTCHA_USE_SSL'] = False  
 
 # WTForms for Login and Registration
 class LoginForm(FlaskForm):
