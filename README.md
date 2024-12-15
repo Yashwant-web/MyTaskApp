@@ -13,12 +13,7 @@ source venv/bin/activate  # On Linux/Mac
 venv\Scripts\activate   # On Windows
 3. Install Dependencies
 pip install -r requirements.txt
-4. Initialize the Database
-python
->>> import database
->>> database.init_db()
->>> exit()
-5. Run the Application
+4. Run the Application
 python app.py
 
 Security Features
